@@ -1,0 +1,310 @@
+---
+title: 'Business Statistics Assessment IB94X0 2020-2021 #1'
+author: 2092650
+output: 
+   html_document:
+    toc: true
+    toc_depth: 3 
+---
+
+```{r setup, message=FALSE, warning=FALSE}
+options(width=100)
+library(tidyverse)
+library(scales)
+library(emmeans)
+library(gridExtra)
+library(Hmisc)
+```
+
+
+------------------------------------------------------------------------
+
+# Data Dictionary
+
++-----------------+----------------------------------------------------------------------------------------------------------+
+| Column Name     | Explanation                                                                                              |
++=================+==========================================================================================================+
+| Outlet_id       | Unique store identifier                                                                                  |
++-----------------+----------------------------------------------------------------------------------------------------------+
+| outlettype      | Type of store - retailer operates three different kinds                                                  |
++-----------------+----------------------------------------------------------------------------------------------------------+
+| sales_1         | Sales in each store for the last full reporting period prior to the trial being implemented              |
++-----------------+----------------------------------------------------------------------------------------------------------+
+| sales_2         | Sales in each store for the first full reporting period after the trial was implemented in select stores |
++-----------------+----------------------------------------------------------------------------------------------------------+
+| intrial         | Indicates whether the store outlet was selected to be in the trial (TRUE) or not (FALSE)                 |
++-----------------+----------------------------------------------------------------------------------------------------------+
+| staff_turnover  | Indicates the proportion of staff working at that outlet that left during the period the data covers     |
++-----------------+----------------------------------------------------------------------------------------------------------+
+| sales_change    | The difference between sales_2 and sales_1 - also referred to as sales gain                              |
++-----------------+----------------------------------------------------------------------------------------------------------+
+| percentage_diff | The percent difference between sales_2 and sales_1                                                       |
++-----------------+----------------------------------------------------------------------------------------------------------+
+
+------------------------------------------------------------------------
+
+# Question 1 Section 1
+
+## Impact of Store Layout on Average Sales
+
+The t-test for sales gain by 'intrial' returns a t(483.08) = -5.7173, P-value = 1.44e-08. Based on this data, it is evident that there is a large difference between sales gain for stores that are and are not participating in the trial. Because of this, we reject the null hypothesis and say that sales gain for stores participating in the trial is definitely different from stores not participating in the trial.
+
+The difference in sales gain controlling for 'intrial' can be seen below in Figure 1.
+
+![Figure 1: Sales Gain by Intrial](sales_gain_contrast_intrial.png)
+
+The mean sales gain for stores not participating in the trial is 18,642 GBP, 95% CI[ -78,661 -- 115,946] GBP. The mean sales gain for stores participating in the trial is 426,893 GBP, 95% CI[327,214 -- 526,572] GBP. The mean sales gain for stores not participating in the trial is 408,250 GBP less, 95% CI[-547,548 -- -268,953] GBP, than stores participating in the trial. Stores participating in the trial have a higher mean sales gain compared to stores not participating in the trial.
+
+The estimation approach data is visualized below in Figure 2 and 3.
+
+![Figure 2: Average Sales Gain by Intrail](sales_gain_gbp.png){width="50%"}![Figure 3: Average Percent Gain by Intrail](sales_gain_percent.png){width="50%"}
+
+Figure 2: Average Sales Gain by 'Intrail' --- Figure 3: Average Percent Gain by 'Intrial'
+
+## Optimal Dependent Varaible
+
+There are two reasons why change in percentage should be used of change in GBP: 1) sales gain as a percentage is more normal and does not have outliers (see figure ) 2) sales gain as a percentage is more intuitive as fluctuations in \$X could be considered very small in context of a large store and enormous in context in of a small store. Using a proportion measure accounts for this difference. 
+
+![Figure 3: Percent Sales Gain by intrial](percent_sales_gain_by_intial.png)
+
+Although, it should be noted that 'intrial' can predict over two times the amount of variance in 'sales_change' than it can in 'percentage_diff.' Additionally, the P-value for 'sales_change' explained by 'intrial' is far more significant than 'percentage_diff.'
+
+### R-squared of Different Dependent Variables
+
+| Model                      | R-squared |
+|----------------------------|-----------|
+| sales_change \~ intrial    | 0.05638   |
+| percentage_diff \~ intrial | 0.01755   |
+
+### P-value for different Dependent Variables
+
+| Model                      | P-value   |
+|----------------------------|-----------|
+| sales_change \~ intrial    | 1.898e-08 |
+| percentage_diff \~ intrial | 0.001294  |
+
+------------------------------------------------------------------------
+
+# Question 2 Section 1
+
+## Impact of Outlet Type and Trial on Percent Sales Gain
+
+Using t-test on a linear model of 'percentage_diff' as a function of 'intrial' and 'outlettype' reveals that percent sales gain differs by outlettype, t(2, 533) = 57.934, p \< 2.2e -16.
+
+In addition, the estimation approach confirms the NHT. Seen below in figure 4, the percent sales gain by outlet type and trial has been visualized. The confidence intervals for the stores which are not intrial overlap zero. It cannot be said that the percent sales gain for stores which are not intrial is different than zero. The estimated confidence intervals can be seen below.
+
+| 'outlettype' and 'intrial' interaction      | lower.CL | upper.CL | emmean  |
+|---------------------------------------------|----------|----------|---------|
+| intrialTRUE:city_center_convenience         |  -5.387  | -3.586   | -4.4865 |
+| intrialTRUE:outlettypecommunity_convenience |  3.002   | 4.323    | 3.6624  |
+| intrialTRUE:outlettypesuperstore            |  2.688   | 4.783    | 3.7355  |
+
+| 'outlettype' and 'intrial' interaction       | lower.CL | upper.CL | emmean  |
+|----------------------------------------------|----------|----------|---------|
+| intrialFALSE:city_center_convenience         | -0.908   | 0.724    | -0.0925 |
+| intrialFALSE:outlettypecommunity_convenience | -0.494   | 0.836    | 0.1710  |
+| intrialFALSE:outlettypesuperstore            | -0.789   | 1.326    | 0.2682  |
+
+
+In summary, 'intrial' and 'outlettype' both influence percent sales gain. Figure 4 shows that stores which are not intiral did not experience a change in percent sales gain. Additionally, 'community_convenience' and 'superstore' which are intrial experienced an increase in percent sales gain. In contrast, 'city_centre_convenience' saw a decline in percent sales gain for stores which were intrial. 
+
+![Figure 4: Percent Sales Gain by Outlet type](percent_sales_gain_by_intrial_and_outlettype.png)
+
+## Impact of Outlet Type, Trial, and Staff Turnover on Percent Sales Gain
+
+Comparing models with and without 'staff_turnover' using ANOVA reveals it does not improve the model significantly, F(533) = 0.2894, p < 0.5908. The adjusted r-squares are also very similar for the two models. 
+
+| With and without 'staff_turnover'   | Adj. R-squared |
+|-------------------------------------|--------------- |
+| With 'staff_turnover'               | 0.3073         | 
+| Without 'staff_turnover'            | 0.3082         | 
+
+
+Additionally, the effects of 'staff_turnover' using the estimation approach can be seen below in Figure 5. From the chart, it is evident that 'staff_turnover' does not influence the sales gain at different outlet types.
+
+![Figure 5: Sales Gain by Outlet Type Controlling for 'staff_turnover'](percent sales gain controlling for outlettype and staff turnover.png)
+
+------------------------------------------------------------------------
+
+# Data Understanding
+
+Reading in Data and Checking Integrity
+
+```{r, message=FALSE, warning=FALSE}
+data <- read.csv("sales_data.txt", stringsAsFactors = TRUE)
+
+#str(data) 
+
+#summary(data) 
+```
+
+Checking Data for Outliers
+
+Note: I believe the results would have been much different if outliers were removed, but because of the lack of information, I did not remove the majority of the potential outliers. For future analysis, I would recommend identifying the reasons for the potential outliers, and if they are identified as actual outliers, remove them.
+
+```{r}
+boxplot(data$staff_turnover)
+
+#boxplot(data$sales_1)
+
+#boxplot(data$sales_2)
+
+data <- subset(data, staff_turnover < 0.039476) #Removing one extreme point which is very different from all other observations
+```
+
+Calculating Sales Gain in GPB and Percent
+
+```{r, message=FALSE, warning=FALSE}
+data <- data %>% mutate(sales_change = sales_2 - sales_1, percentage_diff = ((sales_2 - sales_1)/sales_1)*100) # calculating difference in sales_1 and sales_2 in both in GBP and percentages
+```
+
+Histograms for 'sales_change' Controlling for 'intrial'
+
+```{r, message=FALSE, warning=FALSE}
+ggplot(data, aes(x=sales_change)) + geom_histogram(position="identity", alpha=0.5, binwidth=150000) + facet_wrap(~intrial) + labs(title = "Average Sales Gain by Intrail", y = "Frequency", x = "Sales Gain")
+```
+
+Histograms of 'sales_change' Controlling for 'initial' and 'outlettype'
+
+```{r, message=FALSE, warning=FALSE}
+ggplot(data, aes(x=sales_change, fill=outlettype)) + geom_histogram(position="identity", alpha=0.5, binwidth=150000) + facet_wrap(~intrial) + labs(title = "Average Sales Gain by 'intrial' & 'outlettype'", y = "Frequency", x = "Sales Gain")
+```
+
+# Question 1 Section 2
+
+Linear Model of 'sales_change' Controlling for 'intrial'
+
+```{r, message=FALSE, warning=FALSE}
+# Creating linear model and finding estimated means and confidence intervals
+lm1 <- lm(sales_change~intrial, data=data)
+( lm1.emm <- emmeans(lm1, ~intrial)  ) 
+( lm1.contrast <- confint(pairs(lm1.emm)) ) 
+#Using summary to for null hypothesis testing
+ 
+summary(lm1)
+
+t.test(sales_change~intrial, data=data)
+```
+
+Linear Model of 'percentage_diff' Controlling for 'intrial'
+
+```{r, message=FALSE, warning=FALSE}
+# Creating linear model and finding estimated means and confidence intervals
+lm2 <- lm(percentage_diff~intrial, data=data) 
+( lm2.emm <- emmeans(lm2, ~intrial)  ) 
+( lm2.contrast <- confint(pairs(lm2.emm)) ) 
+#Using summary to for null hypothesis testing
+summary(lm2)
+
+t.test(percentage_diff~intrial, data=data)
+```
+
+Histogram of Sales Gain and Percentage Diff Controlling for 'initial'
+
+```{r, message=FALSE, warning=FALSE}
+#Plot for sales_change
+ggplot(data, aes(x=sales_change, fill=intrial)) + geom_histogram(position="identity", alpha=0.5, binwidth=150000) + labs(title = "Sales Gain by Intrial", x = "Sales Gain", y = "Frequency") 
+
+#Plot for percentage_diff
+ggplot(data, aes(x=percentage_diff, fill=intrial)) + geom_histogram(position="identity", alpha=0.5, binwidth=1) + labs(title = "Percent Sales Gain by Intrial", x = "Sales Gain as Percent", y = "Frequency")
+
+#ggsave("percent_sales_gain_by_intial.png")
+```
+
+Plotting Estimation Approach for 'sales_change' and 'percentage_diff' Controlling for 'intrial'
+
+```{r, message=FALSE, warning=FALSE}
+#Sales growth diff using estimated means and confidence intervals from lm1
+grid.arrange( 
+ggplot(summary(lm1.emm), mapping = aes(x = intrial, y = emmean, ymin = lower.CL, ymax = upper.CL)) + geom_point()+ geom_linerange() + geom_hline(yintercept = 0, linetype = 2) + labs(x = "Intrial", y = "Sales Gain", title = "Average Sales Gain by Intrial \n [95% Confidence Intervals]") + scale_y_continuous(labels = comma), 
+
+ggplot(lm1.contrast, mapping = aes(x = contrast, y = estimate, ymin = lower.CL, ymax = upper.CL)) + geom_point() + geom_linerange() + geom_hline(yintercept = 0, linetype = 2) + labs(y = "Sales Gain", title = "Difference in Sales Gain when \n Intrial vs Not Intrial \n [95% Confidence Interval]") + scale_y_continuous(labels = comma)
+, ncol = 2, top = "Average Sales Gain GBP")
+
+
+#Percent growth diff using estimated means and confidence intervals from lm2
+grid.arrange(
+ggplot(summary(lm2.emm), mapping = aes(x = intrial, y = emmean, ymin = lower.CL, ymax = upper.CL)) + geom_point() + geom_linerange() + geom_hline(yintercept = 0, linetype = 2) + labs(x = "Intrial", y = "Percent Gain", title = "Average Sales Gain Percent by  \n Intrial [95% Confidence Intervals]") + scale_y_continuous(labels = comma),
+
+ggplot(lm2.contrast, mapping = aes(x = contrast, y = estimate, ymin = lower.CL, ymax = upper.CL)) + geom_point() + geom_linerange() + geom_hline(yintercept = 0, linetype = 2) + labs(y = "Percent Gain", title = "Difference in Sales Gain Percent  \n when Inrial vs Not Intrial \n [95% Confidence Interval]") + scale_y_continuous(labels = comma)
+, ncol = 2, top = "Average Sales Gain as Percent of GBP")
+```
+
+------------------------------------------------------------------------
+
+# Question 2 Section 2
+
+Linear Model of 'sales_change' Controlling for 'outlettype' and 'intrial'
+
+```{r, message=FALSE, warning=FALSE}
+# Creating linear model and finding estimated means and confidence intervals
+lm3 <- lm(percentage_diff~intrial * outlettype, data=data) 
+( lm3.emm <- emmeans(lm3, ~intrial * outlettype)  )
+( lm3.contrast <- confint(pairs(lm3.emm)) )
+
+#Using anova and summary to for null hypothesis testing
+summary(lm3)
+
+anova(lm3)
+```
+
+Confidence Intervals of 'sales_change' Controlling for 'intrial' and 'outlettype'
+
+```{r, message=FALSE, warning=FALSE}
+ggplot(summary(lm3.emm), mapping = aes(x = outlettype, y = emmean, ymin = lower.CL, ymax = upper.CL, color = intrial)) + geom_point() + geom_linerange() + geom_hline(yintercept = 0, linetype = 2) + labs(x = "Outlet Type", y = "Percent Sales Gain", title = "Percent Sales Gain by Intrial and Outlettype [95% Confidence Intervals]") + scale_y_continuous(labels = comma) #adds commas to y axis scale 
+
+#ggsave("percent_sales_gain_by_intrial_and_outlettype.png", )
+```
+
+Linear Model Examining the Effect of 'staff_turnover' and 'intial' on Sales Gain - Make graph with estimation approach
+
+```{r, message=FALSE, warning=FALSE}
+# Creating linear model and finding estimated means and confidence intervals
+lm4 <- lm(percentage_diff~intrial * outlettype + staff_turnover, data=data) 
+( lm4.emm <- emmeans(lm4, ~intrial * outlettype + staff_turnover)  )
+( lm4.contrast <- confint(pairs(lm4.emm)) )
+
+#Using summary to for null hypothesis testing
+summary(lm4)
+
+anova(lm4)
+```
+
+Comparing model with staff_turnover vs without 
+```{r}
+anova(lm3, lm4)
+```
+
+
+Plotting Estimation Approach to Show Effects of 'staff_turnover'
+
+```{r}
+g <- grid.arrange( 
+
+ggplot(summary(lm3.emm), mapping = aes(x = outlettype, y = emmean, ymin = lower.CL, ymax = upper.CL, color = intrial)) + geom_point()+ geom_linerange() + geom_hline(yintercept = 0, linetype = 2) + labs(x = "Without 'staff_turnover'", y = "Percent Sales Gain") + scale_y_continuous(labels = comma) + theme(legend.position = "none", axis.text.x = element_text(angle = 15)),
+
+ggplot(summary(lm4.emm), mapping = aes(x = outlettype, y = emmean, ymin = lower.CL, ymax = upper.CL, color = intrial)) + geom_point()+ geom_linerange() + geom_hline(yintercept = 0, linetype = 2) + labs(x = "With 'staff_turnover'", y = "Percent Sales Gain") + scale_y_continuous(labels = comma)+ theme(axis.title.y=element_blank(), axis.text.y=element_blank(), axis.ticks.y=element_blank(), axis.text.x = element_text(angle = 15)), 
+
+ncol = 2, top = "Percent Sales Gain Controlling for 'outlettype' & 'staff_turnover' [95% Confidence Intervals]")
+
+#ggsave("percent sales gain controlling for outlettype and staff turnover.png", g)
+
+```
+
+------------------------------------------------------------------------
+
+# References
+
+Frost, J., 2021. How To Interpret R-Squared In Regression Analysis - Statistics By Jim. [online] Statistics By Jim. Available at: <https://statisticsbyjim.com/regression/interpret-r-squared-regression/> [Accessed 24 January 2021].
+
+Sthda.com. 2021. Correlation Test Between Two Variables In R - Easy Guides - Wiki - STHDA. [online] Available at: <http://www.sthda.com/english/wiki/wiki.php?id_contents=7312> [Accessed 24 January 2021].
+
+Medium. 2021. An Overview Of Correlation Measures Between Categorical And Continuous Variables. [online] Available at: [https://medium.com/\@outside2SDs/an-overview-of-correlation-measures-between-categorical-and-continuous-variables-4c7f85610365](https://medium.com/@outside2SDs/an-overview-of-correlation-measures-between-categorical-and-continuous-variables-4c7f85610365){.uri} [Accessed 24 January 2021].
+
+```{r}
+citation("tidyverse")
+citation("scales")
+citation("emmeans")
+citation("gridExtra")
+citation("Hmisc")
+```
